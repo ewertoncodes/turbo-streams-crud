@@ -29,7 +29,10 @@ class ArticlesController < ApplicationController
           render turbo_stream: [
             turbo_stream.update("new_article", 
               partial: "articles/form", locals: { article: Article.new } 
-            )
+            ),
+            turbo_stream.prepend("articles", 
+            partial: "articles/article", locals: { article: @article } 
+          )
           ]
         end
         format.html { redirect_to article_url(@article), notice: "Article was successfully created." }
@@ -66,6 +69,7 @@ class ArticlesController < ApplicationController
     @article.destroy
 
     respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(@article) }
       format.html { redirect_to articles_url, notice: "Article was successfully destroyed." }
       format.json { head :no_content }
     end
