@@ -17,6 +17,13 @@ class ArticlesController < ApplicationController
 
   # GET /articles/1/edit
   def edit
+    respond_to do |format|
+      format.turbo_stream do 
+          render turbo_stream: turbo_stream.update(@article,
+            partial: "articles/form", locals: { article: @article } 
+          ) 
+      end
+    end 
   end
 
   # POST /articles or /articles.json
@@ -30,6 +37,7 @@ class ArticlesController < ApplicationController
             turbo_stream.update("new_article", 
               partial: "articles/form", locals: { article: Article.new } 
             ),
+            turbo_stream.update("article_counter", Article.count),
             turbo_stream.prepend("articles", 
             partial: "articles/article", locals: { article: @article } 
           )
@@ -55,9 +63,23 @@ class ArticlesController < ApplicationController
   def update
     respond_to do |format|
       if @article.update(article_params)
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.update(@article, 
+              partial: "articles/article", locals: { article: @article} 
+            )
+          ]
+        end
         format.html { redirect_to article_url(@article), notice: "Article was successfully updated." }
         format.json { render :show, status: :ok, location: @article }
       else
+        format.turbo_stream do
+          render turbo_stream: [
+            turbo_stream.update(@article, 
+              partial: "articles/form", locals: { article: @article} 
+            )
+          ]
+        end
         format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @article.errors, status: :unprocessable_entity }
       end
@@ -69,7 +91,10 @@ class ArticlesController < ApplicationController
     @article.destroy
 
     respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(@article) }
+      format.turbo_stream { render turbo_stream: [
+        turbo_stream.remove(@article),
+        turbo_stream.update('article_counter', Article.count)
+      ] }
       format.html { redirect_to articles_url, notice: "Article was successfully destroyed." }
       format.json { head :no_content }
     end

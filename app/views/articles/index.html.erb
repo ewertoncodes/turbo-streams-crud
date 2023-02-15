@@ -1,6 +1,11 @@
 <p style="color: green"><%= notice %></p>
 
-<h1>Article</h1>
+<h1>
+  Article
+  <span id="article_counter">
+    <%= Article.count %>
+  </span>
+</h1>
 
 <div id="new_article">
   <%= render partial: 'articles/form', locals: { article: Article.new } %>

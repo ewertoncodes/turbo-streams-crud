@@ -8,5 +8,6 @@
     <strong>Body:</strong>
     <%= article.body %>
   </p>
+  <%= button_to "Edit this article", edit_article_path(article)%> 
   <%= button_to "Destroy this article", @article, method: :delete %>
 </div>
